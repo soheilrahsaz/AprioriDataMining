@@ -21,12 +21,17 @@ public class Transaction {
 
     public boolean hasItems(String... items)
     {
+        return hasItems(false, items);
+    }
+
+    public boolean hasItems(boolean ignoreFirst, String... items)
+    {
         if(items.length > this.items.size())
             return false;
 
-        for(String item : items)
+        for (int i = ignoreFirst ? 1 : 0; i < items.length; i++)
         {
-            if(!this.items.contains(item))
+            if(!this.items.contains(items[i]))
                 return false;
         }
 
