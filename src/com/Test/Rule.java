@@ -3,6 +3,7 @@ package com.Test;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Rule {
 
@@ -50,13 +51,22 @@ public class Rule {
         this.confidence = confidence;
     }
 
-    @Override
-    public String toString() {
+    public String prettyPrint() {
         return Arrays.toString(getPrior().getItems()) + " --> " + Arrays.toString(getResult().getItems())
                 + " {" + Map.of("Lift", formatDouble(lift), "Confidence", formatPercentage(confidence), "Support", formatPercentage(unionSupport))
                 .entrySet().stream().map(en -> en.getKey() + ": " + en.getValue()).collect(Collectors.joining(", "))
                 + "}";
     }
+
+    public String csvPrint()
+    {
+        return Stream.of(getPrior().getItems()).collect(Collectors.joining("|"))
+                + "-->"
+                + Stream.of(getResult().getItems()).collect(Collectors.joining("|"))
+                + ","
+                + formatDouble(lift) + "," + formatPercentage(confidence) + "," + formatPercentage(unionSupport);
+    }
+
 
     private String formatPercentage(double num)
     {

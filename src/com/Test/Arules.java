@@ -1,9 +1,6 @@
 package com.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,6 +26,8 @@ public class Arules {
         while (true)
         {
             ArrayList<ItemSet> filtered = scanAndFilterItemSetAndSetSupport(itemSets);
+            if(filtered.size() == 0)
+                break;
             if(itemSets != allItems)
             {
                 frequentPatterns.add(filtered);
@@ -48,11 +47,44 @@ public class Arules {
         finalRules = generateRules().stream().sorted(Comparator.comparingDouble(Rule::getLift).reversed()).collect(Collectors.toList());
     }
 
-    public void printResult()
+    public void printFrequentPatterns(int max)
     {
-        finalRules.stream().map(Rule::toString).forEach(System.out::println);
+        this.frequentPatterns.stream().flatMap(List::stream).sorted(Comparator.comparingDouble(ItemSet::getSupport).reversed())
+        .limit(max).map(itemSet -> Arrays.toString(itemSet.getItems()) + ": " + String.format("%.2f", itemSet.getSupport())).forEach(System.out::println);
+    }
+
+    public void printRules()
+    {
+        finalRules.stream().map(Rule::prettyPrint).forEach(System.out::println);
         System.out.println("Frequent Patterns: " + this.frequentPatterns.stream().flatMap(List::stream).count());
         System.out.println("Rules: " + this.finalRules.stream().count());
+    }
+
+    public void printStaticResult()
+    {
+        DoubleSummaryStatistics supportStatistics = this.frequentPatterns.stream().flatMap(List::stream).mapToDouble(ItemSet::getSupport).summaryStatistics();
+        DoubleSummaryStatistics confidenceStatistics = this.finalRules.stream().mapToDouble(Rule::getConfidence).summaryStatistics();
+        DoubleSummaryStatistics liftStatistics = this.finalRules.stream().mapToDouble(Rule::getLift).summaryStatistics();
+        System.out.println(Stream.of(
+                minSupport,
+                minConfidence,
+                this.frequentPatterns.stream().flatMap(List::stream).count()*1d,
+                this.finalRules.stream().count()*1d,
+                supportStatistics.getMax(),
+                supportStatistics.getMin(),
+                supportStatistics.getAverage(),
+                confidenceStatistics.getMax(),
+                confidenceStatistics.getMin(),
+                confidenceStatistics.getAverage(),
+                liftStatistics.getMax(),
+                liftStatistics.getMin(),
+                liftStatistics.getAverage()
+                ).map(this::formatDouble).collect(Collectors.joining(",")));
+    }
+
+    private String formatDouble(double num)
+    {
+        return String.format("%.4f", num);
     }
 
     private List<Rule> generateRules()

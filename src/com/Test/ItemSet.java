@@ -33,6 +33,7 @@ public class ItemSet {
         return new ItemSet(newItems);
     }
 
+
     /**
      * checking if the left items are equal
      * @param that
